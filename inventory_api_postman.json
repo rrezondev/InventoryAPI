@@ -1,0 +1,172 @@
+{
+  "info": {
+    "name": "Inventory Management API",
+    "description": "Koleksioni i testeve për REST API të Menaxhimit të Inventarit",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Login (Admin)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var json = pm.response.json();",
+            "pm.collectionVariables.set('token', json.token);",
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Token exists', () => pm.expect(json.token).to.be.a('string'));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin@123\"\n}" }
+          }
+        },
+        {
+          "name": "Get Current User (/me)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/auth/me",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "📂 Categories",
+      "item": [
+        {
+          "name": "GET All Categories",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/categories" }
+        },
+        {
+          "name": "POST Create Category",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/categories",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Sporte & Outdoor\",\n  \"description\": \"Pajisje sportive dhe outdoor\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📦 Products",
+      "item": [
+        {
+          "name": "GET All Products (no filter)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/products" }
+        },
+        {
+          "name": "GET Products - Search + Filter",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/products?search=laptop&categoryId=1&sortBy=price&sortOrder=asc&page=1&pageSize=10",
+              "query": [
+                { "key": "search", "value": "laptop" },
+                { "key": "categoryId", "value": "1" },
+                { "key": "sortBy", "value": "price" },
+                { "key": "sortOrder", "value": "asc" },
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Low Stock Alert",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/products/alerts/low-stock",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "POST Create Product",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/products",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Laptop Dell XPS 15\",\n  \"sku\": \"DELL-XPS15-001\",\n  \"description\": \"Laptop profesional 15.6 inch, 32GB RAM, 1TB SSD\",\n  \"price\": 1299.99,\n  \"costPrice\": 950.00,\n  \"stockQuantity\": 25,\n  \"lowStockThreshold\": 5,\n  \"barcode\": \"1234567890123\",\n  \"categoryId\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT Update Product",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/products/1",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"price\": 1199.99,\n  \"lowStockThreshold\": 8\n}" }
+          }
+        },
+        {
+          "name": "PATCH Adjust Stock (+50)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/products/1/stock",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"quantity\": 50,\n  \"reason\": \"Furnizim i ri nga depoja\"\n}" }
+          }
+        },
+        {
+          "name": "DELETE Product (soft)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/products/1",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Audit Log",
+      "item": [
+        {
+          "name": "GET All Audit Logs",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/audit",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "GET Product History",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/audit/product/1",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "GET Statistics (30 days)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/audit/statistics?days=30",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    }
+  ]
+}
